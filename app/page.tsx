@@ -451,7 +451,7 @@ export default function HomePage() {
       </section>
 
       {/* Farmer Spotlight */}
-      <section className="py-20 bg-gradient-to-b from-white to-amber-50">
+      <section  id="contact-section" className="py-20 bg-gradient-to-b from-white to-amber-50">
         <div className="container px-4 md:px-6">
           <div className="mb-12 text-center">
             <Badge className="mb-4 bg-amber-100 text-amber-800 hover:bg-amber-100 px-3 py-1 text-sm rounded-full">

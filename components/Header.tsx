@@ -17,6 +17,12 @@ const Header = () => {
         window.addEventListener("scroll", handleScroll)
         return () => window.removeEventListener("scroll", handleScroll)
       }, [])
+
+      const handleScrollToSection = () => {
+        const section = document.getElementById("contact-section")
+        section?.scrollIntoView({ behavior: "smooth" })
+      }
+    
   return (
     <header
     className={`sticky top-0 z-40 w-full transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm" : "bg-transparent"}`}
@@ -48,13 +54,13 @@ const Header = () => {
         <Link href="/shop" className="text-sm font-medium hover:text-emerald-600 transition-colors">
           Shop
         </Link>
-        <Link href="#" className="text-sm font-medium hover:text-emerald-600 transition-colors">
+        <button onClick={handleScrollToSection} className="text-sm font-medium text-foreground hover:text-emerald-600 transition-colors bg-transparent p-0 border-none">
           Farmers
-        </Link>
-        <Link href="#" className="text-sm font-medium hover:text-emerald-600 transition-colors">
+          </button>
+        <Link href="/infos/how-it-works" className="text-sm font-medium hover:text-emerald-600 transition-colors">
           How It Works
         </Link>
-        <Link href="#" className="text-sm font-medium hover:text-emerald-600 transition-colors">
+        <Link href="/about-us" className="text-sm font-medium hover:text-emerald-600 transition-colors">
           About Us
         </Link>
       </nav>
@@ -72,7 +78,9 @@ const Header = () => {
             Sign In
           </Button>
             </Link>
+            <Link href="/auth/signup">
           <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6">Sign Up</Button>
+          </Link>
         </div>
         <Sheet>
           <SheetTrigger asChild>
@@ -106,16 +114,16 @@ const Header = () => {
                 </Link>
               </div>
               <nav className="flex flex-col gap-6 py-8">
-                <Link href="#" className="text-lg font-medium">
+                <Link href="/shop" className="text-lg font-medium">
                   Shop
                 </Link>
                 <Link href="#" className="text-lg font-medium">
                   Farmers
                 </Link>
-                <Link href="#" className="text-lg font-medium">
+                <Link href="infos/how-it-works" className="text-lg font-medium">
                   How It Works
                 </Link>
-                <Link href="#" className="text-lg font-medium">
+                <Link href="/about-us" className="text-lg font-medium">
                   About Us
                 </Link>
               </nav>
