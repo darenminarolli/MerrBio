@@ -67,9 +67,11 @@ const Header = () => {
           <span className="sr-only">Shopping Cart</span>
         </Button>
         <div className="hidden md:flex md:gap-3">
+            <Link href="/auth/signin">
           <Button variant="ghost" className="hover:text-emerald-600 transition-colors">
             Sign In
           </Button>
+            </Link>
           <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6">Sign Up</Button>
         </div>
         <Sheet>
@@ -118,10 +120,14 @@ const Header = () => {
                 </Link>
               </nav>
               <div className="mt-auto border-t pt-6 flex flex-col gap-3">
+                <Link href='/auth/signin'>
                 <Button variant="outline" className="w-full justify-start">
                   Sign In
                 </Button>
+                </Link>
+            <Link href='/auth/signup'>
                 <Button className="w-full bg-emerald-600 hover:bg-emerald-700">Sign Up</Button>
+            </Link>
               </div>
             </div>
           </SheetContent>

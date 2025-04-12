@@ -49,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
-      <Link href={`/products/${product.id}`} className="absolute inset-0 z-10">
+      <Link href={`/shop/${product.id}`} className="absolute inset-0 z-10">
         <span className="sr-only">View Product</span>
       </Link>
 
