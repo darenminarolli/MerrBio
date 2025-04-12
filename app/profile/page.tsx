@@ -103,7 +103,7 @@ export default function FarmerDashboard() {
       formData.append("inStock", String(newProduct.inStock))
       if(user)
       formData.append("farmer", user.id)
-  
+   
       if (imageFile) {
         formData.append("images", imageFile)
       }
