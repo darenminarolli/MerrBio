@@ -2,7 +2,7 @@
 
 import { X, Minus, Plus, ShoppingBag } from "lucide-react"
 import Image from "next/image"
-import { useCart, type CartItem } from "./cart-provider"
+import { useCart, type CartItem } from "@/components/cart/cart-provider"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { formatPrice } from "@/lib/utils"

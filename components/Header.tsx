@@ -77,7 +77,7 @@ const Header = () => {
           </span>
           <span className="sr-only">Shopping Cart</span>
         </Button>
-        <CartModal open={cartOpen} onOpenChange={setCartOpen} />
+        <CartModal isOpen={ cartOpen} onClose={()=>setCartOpen(false)} />
         {
             user ? (
                 <div className="hidden md:flex md:gap-3">
