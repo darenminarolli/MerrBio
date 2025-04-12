@@ -29,34 +29,48 @@ import {
   ImageIcon,
 } from "lucide-react"
 import { motion } from "framer-motion"
+import { useAuth } from "@/contexts/UserContext"
 
 export default function FarmerDashboard() {
   const [searchTerm, setSearchTerm] = useState("")
   const [expandedRequest, setExpandedRequest] = useState<number | null>(null)
   const [isAddProductOpen, setIsAddProductOpen] = useState(false)
+  const {user} = useAuth()
   const [newProduct, setNewProduct] = useState({
-    name: "",
+    title: "",
     category: "",
-    stock: "",
-    unit: "kg",
     price: "",
     description: "",
+    tags: "", // comma-separated string
+    organic: false,
+    inStock: true,
   })
+  
   const [productImage, setProductImage] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Handle form input changes
+  
+  // Handle input and text area changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setNewProduct((prev) => ({ ...prev, [name]: value }))
   }
-
+  const handleTagsChange = (e: any) => {
+    const value = e.target.value;
+    setNewProduct((prev) => ({ ...prev, tags: value.split(',').map((tag:any) => tag.trim()) }));
+  };
+  
+  // Handle checkbox changes
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target
+    setNewProduct((prev) => ({ ...prev, [name]: checked }))
+  }
+  
   // Handle select changes
   const handleSelectChange = (name: string, value: string) => {
     setNewProduct((prev) => ({ ...prev, [name]: value }))
   }
-
+  
   // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -69,47 +83,60 @@ export default function FarmerDashboard() {
       reader.readAsDataURL(file)
     }
   }
-
-  // Handle image click to trigger file input
+  
+  // Trigger file input
   const handleImageClick = () => {
     fileInputRef.current?.click()
   }
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  
+  // 🟢 Submit to /api/new-product
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Here you would typically send the data to your backend
-    console.log("New product:", newProduct)
-    console.log("Image file:", imageFile)
-
-    // Add the product to the list (in a real app, this would come from the backend)
-    const newId = Math.max(...farmerProducts.map((p) => p.id)) + 1
-    const productToAdd = {
-      id: newId,
-      name: newProduct.name,
-      category: newProduct.category,
-      stock: Number.parseInt(newProduct.stock),
-      unit: newProduct.unit,
-      price: Number.parseFloat(newProduct.price),
-      status: "In Stock",
-      image: productImage || "/placeholder.svg?height=100&width=100",
+  
+    try {
+      const formData = new FormData()
+      formData.append("title", newProduct.title)
+      formData.append("category", newProduct.category)
+      formData.append("price", newProduct.price)
+      formData.append("description", newProduct.description)
+      formData.append("organic", String(newProduct.organic))
+      formData.append("inStock", String(newProduct.inStock))
+      if(user)
+      formData.append("farmer", user.id)
+  
+      if (imageFile) {
+        formData.append("images", imageFile)
+      }
+  
+      const res = await fetch("http://localhost:5000/api/products", {
+        method: "POST",
+        body: formData,
+      })
+  
+      if (!res.ok) throw new Error("Failed to add product")
+  
+      const result = await res.json()
+      console.log("Product added:", result)
+  
+      // Reset form
+      setNewProduct({
+        title: "",
+        category: "",
+        price: "",
+        description: "",
+        tags: "",
+        organic: false,
+        inStock: true,
+      })
+      setProductImage(null)
+      setImageFile(null)
+      setIsAddProductOpen(false)
+    } catch (err) {
+      console.error("Error submitting product:", err)
+      // optionally show toast or error UI
     }
-
-    // Reset form and close modal
-    setNewProduct({
-      name: "",
-      category: "",
-      stock: "",
-      unit: "kg",
-      price: "",
-      description: "",
-    })
-    setProductImage(null)
-    setImageFile(null)
-    setIsAddProductOpen(false)
   }
-
+  
   // Mock data for farmer products
   const farmerProducts = [
     {
@@ -209,7 +236,33 @@ export default function FarmerDashboard() {
       setExpandedRequest(id)
     }
   }
+ const handleLogout = async() => {
+    // Clear user data from local storage
+    localStorage.removeItem("user")
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // 👈 crucial for cookies
+      })
 
+      const data = await res.json()
+
+      if (!res.ok) {
+        // setError(data.message || "Something went wrong")
+      } else {
+        console.log("User logged in:", data)
+        localStorage.setItem("user", JSON.stringify(data.user))
+        window.location.href = "/" // 👈 redirect to home page
+      }
+    } catch (err) {
+    alert('error')
+    }
+    // Redirect to login page
+    window.location.href = "/auth/signin"
+ }
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Simple Header */}
@@ -219,7 +272,7 @@ export default function FarmerDashboard() {
             <Tractor className="h-7 w-7 text-teal-500" />
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">Farmer Dashboard</h1>
           </div>
-
+ <button onClick={handleLogout}>logout</button>
           <div className="flex items-center gap-4">
             <button className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
               <ShoppingCart className="h-5 w-5 text-slate-600 dark:text-slate-300" />
@@ -465,146 +518,149 @@ export default function FarmerDashboard() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="grid grid-cols-1 gap-6">
-              {/* Product Image Upload */}
-              <div className="flex flex-col items-center">
-                <div
-                  className="w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center cursor-pointer hover:border-teal-500 transition-colors overflow-hidden"
-                  onClick={handleImageClick}
-                >
-                  {productImage ? (
-                    <img
-                      src={productImage || "/placeholder.svg"}
-                      alt="Product preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center p-4">
-                      <ImageIcon className="h-10 w-10 text-slate-400 mb-2" />
-                      <p className="text-xs text-center text-slate-500">Click to upload product image</p>
-                    </div>
-                  )}
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-                <p className="text-xs text-slate-500 mt-2">Recommended: 400x400px</p>
-              </div>
+  <div className="grid grid-cols-1 gap-6">
+    {/* Product Image Upload */}
+    <div className="flex flex-col items-center">
+      <div
+        className="w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center cursor-pointer hover:border-teal-500 transition-colors overflow-hidden"
+        onClick={handleImageClick}
+      >
+        {productImage ? (
+          <img
+            src={productImage || "/placeholder.svg"}
+            alt="Product preview"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-4">
+            <ImageIcon className="h-10 w-10 text-slate-400 mb-2" />
+            <p className="text-xs text-center text-slate-500">Click to upload product image</p>
+          </div>
+        )}
+      </div>
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+        multiple
+      />
+      <p className="text-xs text-slate-500 mt-2">You can upload multiple images</p>
+    </div>
 
-              {/* Product Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Product Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={newProduct.name}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Organic Tomatoes"
-                  required
-                />
-              </div>
+    {/* Product Title */}
+    <div className="space-y-2">
+      <Label htmlFor="title">Product Title</Label>
+      <Input
+        id="title"
+        name="title"
+        value={newProduct.title}
+        onChange={handleInputChange}
+        placeholder="e.g., Organic Tomatoes"
+        required
+      />
+    </div>
 
-              {/* Category */}
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select value={newProduct.category} onValueChange={(value) => handleSelectChange("category", value)}>
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Vegetables">Vegetables</SelectItem>
-                    <SelectItem value="Fruits">Fruits</SelectItem>
-                    <SelectItem value="Dairy & Eggs">Dairy & Eggs</SelectItem>
-                    <SelectItem value="Meat">Meat</SelectItem>
-                    <SelectItem value="Grains">Grains</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+    {/* Category */}
+    <div className="space-y-2">
+      <Label htmlFor="category">Category</Label>
+      <Select value={newProduct.category} onValueChange={(value) => handleSelectChange("category", value)}>
+        <SelectTrigger id="category">
+          <SelectValue placeholder="Select a category" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="Vegetables">Vegetables</SelectItem>
+          <SelectItem value="Fruits">Fruits</SelectItem>
+          <SelectItem value="Dairy & Eggs">Dairy & Eggs</SelectItem>
+          <SelectItem value="Meat">Meat</SelectItem>
+          <SelectItem value="Grains">Grains</SelectItem>
+          <SelectItem value="Other">Other</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
 
-              {/* Stock and Unit */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="stock">Stock Amount</Label>
-                  <Input
-                    id="stock"
-                    name="stock"
-                    type="number"
-                    min="0"
-                    value={newProduct.stock}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 100"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="unit">Unit</Label>
-                  <Select value={newProduct.unit} onValueChange={(value) => handleSelectChange("unit", value)}>
-                    <SelectTrigger id="unit">
-                      <SelectValue placeholder="Select a unit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="kg">Kilograms (kg)</SelectItem>
-                      <SelectItem value="g">Grams (g)</SelectItem>
-                      <SelectItem value="lb">Pounds (lb)</SelectItem>
-                      <SelectItem value="oz">Ounces (oz)</SelectItem>
-                      <SelectItem value="l">Liters (l)</SelectItem>
-                      <SelectItem value="ml">Milliliters (ml)</SelectItem>
-                      <SelectItem value="dozen">Dozen</SelectItem>
-                      <SelectItem value="piece">Piece</SelectItem>
-                      <SelectItem value="bunch">Bunch</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+    {/* Price */}
+    <div className="space-y-2">
+      <Label htmlFor="price">Price</Label>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
+        <Input
+          id="price"
+          name="price"
+          type="number"
+          min="0"
+          step="0.01"
+          value={newProduct.price}
+          onChange={handleInputChange}
+          className="pl-8"
+          placeholder="0.00"
+          required
+        />
+      </div>
+    </div>
 
-              {/* Price */}
-              <div className="space-y-2">
-                <Label htmlFor="price">Price per {newProduct.unit}</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={newProduct.price}
-                    onChange={handleInputChange}
-                    className="pl-8"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-              </div>
+    {/* Tags */}
+    <div className="space-y-2">
+      <Label htmlFor="tags">Tags</Label>
+      <Input
+        id="tags"
+        name="tags"
+        value={newProduct.tags}
+        onChange={handleTagsChange} // You can split by comma in this function
+        placeholder="e.g., fresh,local,seasonal"
+      />
+      <p className="text-xs text-slate-500">Separate tags with commas</p>
+    </div>
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Description (Optional)</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={newProduct.description}
-                  onChange={handleInputChange}
-                  placeholder="Describe your product..."
-                  rows={3}
-                />
-              </div>
-            </div>
+    {/* Organic Checkbox */}
+    <div className="flex items-center space-x-2">
+      <input
+        type="checkbox"
+        id="organic"
+        name="organic"
+        checked={newProduct.organic}
+        onChange={handleCheckboxChange}
+      />
+      <Label htmlFor="organic">Organic</Label>
+    </div>
 
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsAddProductOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white">
-                <Plus className="mr-2 h-4 w-4" /> Add Product
-              </Button>
-            </DialogFooter>
-          </form>
+    {/* In Stock Checkbox */}
+    <div className="flex items-center space-x-2">
+      <input
+        type="checkbox"
+        id="inStock"
+        name="inStock"
+        checked={newProduct.inStock}
+        onChange={handleCheckboxChange}
+      />
+      <Label htmlFor="inStock">In Stock</Label>
+    </div>
+
+    {/* Description */}
+    <div className="space-y-2">
+      <Label htmlFor="description">Description</Label>
+      <Textarea
+        id="description"
+        name="description"
+        value={newProduct.description}
+        onChange={handleInputChange}
+        placeholder="Describe your product..."
+        rows={3}
+      />
+    </div>
+  </div>
+
+  <DialogFooter className="pt-4">
+    <Button type="button" variant="outline" onClick={() => setIsAddProductOpen(false)}>
+      Cancel
+    </Button>
+    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white">
+      <Plus className="mr-2 h-4 w-4" /> Add Product
+    </Button>
+  </DialogFooter>
+</form>
+
         </DialogContent>
       </Dialog>
     </div>

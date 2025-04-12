@@ -4,11 +4,12 @@ import Link from 'next/link'
 import { Button } from './ui/button'
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet'
 import { Menu, ShoppingCart } from 'lucide-react'
+import { useAuth } from '@/contexts/UserContext'
 
 
 const Header = () => {
       const [scrolled, setScrolled] = useState(false)
-    
+      const { user, isAuthenticated } = useAuth()
       useEffect(() => {
         const handleScroll = () => {
           setScrolled(window.scrollY > 50)
@@ -72,16 +73,29 @@ const Header = () => {
           </span>
           <span className="sr-only">Shopping Cart</span>
         </Button>
-        <div className="hidden md:flex md:gap-3">
-            <Link href="/auth/signin">
-          <Button variant="ghost" className="hover:text-emerald-600 transition-colors">
-            Sign In
-          </Button>
-            </Link>
-            <Link href="/auth/signup">
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6">Sign Up</Button>
-          </Link>
-        </div>
+        {
+            user ? (
+                <div className="hidden md:flex md:gap-3">
+                <Link href="/profile">
+                <Button variant="ghost" className="hover:text-emerald-600 transition-colors">
+                    Profile
+                </Button>
+                </Link>
+                </div>
+            ) : (
+                <div className="hidden md:flex md:gap-3">
+                <Link href="/auth/signin">
+              <Button variant="ghost" className="hover:text-emerald-600 transition-colors">
+                Sign In
+              </Button>
+                </Link>
+                <Link href="/auth/signup">
+              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6">Sign Up</Button>
+              </Link>
+            </div>
+            )
+        }
+
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden">

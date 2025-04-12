@@ -1,8 +1,7 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff, ArrowRight } from "lucide-react"
 
@@ -10,9 +9,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 export default function SignInForm() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -20,6 +27,7 @@ export default function SignInForm() {
     password: "",
     rememberMe: false,
   })
+  const [error, setError] = useState("")
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -33,14 +41,33 @@ export default function SignInForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate API call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      console.log("Sign in data:", formData)
-      // Handle successful sign in here
-    } catch (error) {
-      console.error("Sign in error:", error)
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // 👈 crucial for cookies
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.message || "Something went wrong")
+      } else {
+        console.log("User logged in:", data)
+        localStorage.setItem("user", JSON.stringify(data.user))
+        window.location.href = "/" // 👈 redirect to home page
+        router.push("/") // 👈 or wherever you want
+      }
+    } catch (err) {
+      setError("Network error")
     } finally {
       setIsLoading(false)
     }
@@ -91,7 +118,10 @@ export default function SignInForm() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link href="/forgot-password" className="text-sm font-medium text-emerald-600 hover:text-emerald-700">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -113,19 +143,23 @@ export default function SignInForm() {
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                  <span className="sr-only">
+                    {showPassword ? "Hide password" : "Show password"}
+                  </span>
                 </button>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="remember" checked={formData.rememberMe} onCheckedChange={handleCheckboxChange} />
-              <Label
-                htmlFor="remember"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <Checkbox
+                id="remember"
+                checked={formData.rememberMe}
+                onCheckedChange={handleCheckboxChange}
+              />
+              <Label htmlFor="remember" className="text-sm">
                 Remember me
               </Label>
             </div>
+            {error && <p className="text-red-600 text-sm text-center">{error}</p>}
             <Button
               type="submit"
               className="h-12 w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-full"
@@ -133,7 +167,7 @@ export default function SignInForm() {
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   <span className="ml-2">Signing in...</span>
                 </div>
               ) : (
@@ -148,7 +182,10 @@ export default function SignInForm() {
         <CardFooter className="flex flex-col">
           <div className="mt-2 text-center text-sm">
             Don't have an account?{" "}
-            <Link href="/sign-up" className="font-medium text-emerald-600 hover:text-emerald-700">
+            <Link
+              href="/sign-up"
+              className="font-medium text-emerald-600 hover:text-emerald-700"
+            >
               Sign up
             </Link>
           </div>

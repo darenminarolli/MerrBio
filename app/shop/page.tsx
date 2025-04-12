@@ -1,87 +1,90 @@
-"use client"
+'use client'
+import { useState, useEffect } from "react";
+import { Loader2, Search, SlidersHorizontal } from "lucide-react";
+import { motion } from "framer-motion";
 
-import { useState, useEffect } from "react"
-import { Loader2, Search, SlidersHorizontal } from "lucide-react"
-import { motion } from "framer-motion"
-
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import ProductCard from "@/components/product-card"
-import ProductFilters from "@/components/product-filters"
-import type { Product } from "@/lib/types"
-import { getProducts } from "@/lib/data"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import ProductCard from "@/components/product-card";
+import ProductFilters from "@/components/product-filters";
+import type { Product } from "@/lib/types";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     category: "",
     priceRange: { min: 0, max: 1000 },
     organic: false,
     inStock: false,
-  })
+  });
 
+  // Fetch products from the API endpoint
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProducts()
-        setProducts(data)
-        setFilteredProducts(data)
-        setLoading(false)
+        const response = await fetch("http://localhost:5000/api/products");
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data = await response.json();
+        setProducts(data);
+        setFilteredProducts(data);
+        setLoading(false);
       } catch (error) {
-        console.error("Error fetching products:", error)
-        setLoading(false)
+        console.error("Error fetching products:", error);
+        setLoading(false);
       }
-    }
+    };
 
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, []);
 
+  // Apply filters and search
   useEffect(() => {
-    // Apply filters and search
-    let result = [...products]
+    let result = [...products];
 
     // Apply search query
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
+      const query = searchQuery.toLowerCase();
       result = result.filter(
         (product) =>
           product.name.toLowerCase().includes(query) ||
           product.description.toLowerCase().includes(query) ||
           product.farmerName.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query),
-      )
+          product.category.toLowerCase().includes(query)
+      );
     }
 
     // Filter by category
     if (filters.category) {
-      result = result.filter((product) => product.category === filters.category)
+      result = result.filter((product) => product.category === filters.category);
     }
 
     // Filter by price range
     result = result.filter(
-      (product) => product.price >= filters.priceRange.min && product.price <= filters.priceRange.max,
-    )
+      (product) => product.price >= filters.priceRange.min && product.price <= filters.priceRange.max
+    );
 
     // Filter by organic
     if (filters.organic) {
-      result = result.filter((product) => product.isOrganic)
+      result = result.filter((product) => product.isOrganic);
     }
 
     // Filter by stock
     if (filters.inStock) {
-      result = result.filter((product) => product.stock > 0)
+      result = result.filter((product) => product.stock > 0);
     }
 
-    setFilteredProducts(result)
-  }, [filters, products, searchQuery])
+    setFilteredProducts(result);
+  }, [filters, products, searchQuery]);
 
   const handleFilterChange = (newFilters: any) => {
-    setFilters({ ...filters, ...newFilters })
-  }
+    setFilters({ ...filters, ...newFilters });
+  };
 
   const clearFilters = () => {
     setFilters({
@@ -89,9 +92,9 @@ export default function ProductsPage() {
       priceRange: { min: 0, max: 1000 },
       organic: false,
       inStock: false,
-    })
-    setSearchQuery("")
-  }
+    });
+    setSearchQuery("");
+  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -101,12 +104,12 @@ export default function ProductsPage() {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const item = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50/50 to-white">
@@ -217,5 +220,5 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
