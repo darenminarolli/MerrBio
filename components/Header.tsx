@@ -45,7 +45,7 @@ const Header = () => {
         </Link>
       </div>
       <nav className="hidden md:flex md:items-center md:gap-8">
-        <Link href="#" className="text-sm font-medium hover:text-emerald-600 transition-colors">
+        <Link href="/shop" className="text-sm font-medium hover:text-emerald-600 transition-colors">
           Shop
         </Link>
         <Link href="#" className="text-sm font-medium hover:text-emerald-600 transition-colors">
