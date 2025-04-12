@@ -125,11 +125,11 @@ export default function ProductPage({ params }: ProductPageProps) {
             Home
           </Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-emerald-600">
+          <Link href="/shop" className="hover:text-emerald-600">
             Products
           </Link>
           <span>/</span>
-          <Link href={`/products?category=${product.category}`} className="hover:text-emerald-600">
+          <Link href={`/shop?category=${product.category}`} className="hover:text-emerald-600">
             {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
           </Link>
           <span>/</span>
