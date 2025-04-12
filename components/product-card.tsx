@@ -63,7 +63,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
 
         <Image
-          src={product.image || "/placeholder.svg"}
+          src="https://domf5oio6qrcr.cloudfront.net/medialibrary/11499/3b360279-8b43-40f3-9b11-604749128187.jpg"
           alt={product.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"

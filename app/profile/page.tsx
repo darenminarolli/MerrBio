@@ -41,24 +41,16 @@ export default function FarmerDashboard() {
     category: "",
     price: "",
     description: "",
-    tags: "", // comma-separated string
     organic: false,
     inStock: true,
   })
-  
-  const [productImage, setProductImage] = useState<string | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Handle input and text area changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setNewProduct((prev) => ({ ...prev, [name]: value }))
   }
-  const handleTagsChange = (e: any) => {
-    const value = e.target.value;
-    setNewProduct((prev) => ({ ...prev, tags: value.split(',').map((tag:any) => tag.trim()) }));
-  };
   
   // Handle checkbox changes
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,18 +63,6 @@ export default function FarmerDashboard() {
     setNewProduct((prev) => ({ ...prev, [name]: value }))
   }
   
-  // Handle image upload
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageFile(file)
-      const reader = new FileReader()
-      reader.onload = () => {
-        setProductImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
   
   // Trigger file input
   const handleImageClick = () => {
@@ -94,23 +74,15 @@ export default function FarmerDashboard() {
     e.preventDefault()
   
     try {
-      const formData = new FormData()
-      formData.append("title", newProduct.title)
-      formData.append("category", newProduct.category)
-      formData.append("price", newProduct.price)
-      formData.append("description", newProduct.description)
-      formData.append("organic", String(newProduct.organic))
-      formData.append("inStock", String(newProduct.inStock))
-      if(user)
-      formData.append("farmer", user.id)
-   
-      if (imageFile) {
-        formData.append("images", imageFile)
-      }
   
       const res = await fetch("http://localhost:5000/api/products", {
         method: "POST",
-        body: formData,
+        body: JSON.stringify({
+          ...newProduct,
+          farmer: user?.id,
+        }),
+        headers: {'Content-Type': 'application/json' },
+        credentials: "include", // 👈 crucial for cookies
       })
   
       if (!res.ok) throw new Error("Failed to add product")
@@ -124,12 +96,9 @@ export default function FarmerDashboard() {
         category: "",
         price: "",
         description: "",
-        tags: "",
         organic: false,
         inStock: true,
       })
-      setProductImage(null)
-      setImageFile(null)
       setIsAddProductOpen(false)
     } catch (err) {
       console.error("Error submitting product:", err)
@@ -519,36 +488,6 @@ export default function FarmerDashboard() {
 
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
   <div className="grid grid-cols-1 gap-6">
-    {/* Product Image Upload */}
-    <div className="flex flex-col items-center">
-      <div
-        className="w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center cursor-pointer hover:border-teal-500 transition-colors overflow-hidden"
-        onClick={handleImageClick}
-      >
-        {productImage ? (
-          <img
-            src={productImage || "/placeholder.svg"}
-            alt="Product preview"
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center p-4">
-            <ImageIcon className="h-10 w-10 text-slate-400 mb-2" />
-            <p className="text-xs text-center text-slate-500">Click to upload product image</p>
-          </div>
-        )}
-      </div>
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/*"
-        className="hidden"
-        onChange={handleImageUpload}
-        multiple
-      />
-      <p className="text-xs text-slate-500 mt-2">You can upload multiple images</p>
-    </div>
-
     {/* Product Title */}
     <div className="space-y-2">
       <Label htmlFor="title">Product Title</Label>
@@ -600,18 +539,6 @@ export default function FarmerDashboard() {
       </div>
     </div>
 
-    {/* Tags */}
-    <div className="space-y-2">
-      <Label htmlFor="tags">Tags</Label>
-      <Input
-        id="tags"
-        name="tags"
-        value={newProduct.tags}
-        onChange={handleTagsChange} // You can split by comma in this function
-        placeholder="e.g., fresh,local,seasonal"
-      />
-      <p className="text-xs text-slate-500">Separate tags with commas</p>
-    </div>
 
     {/* Organic Checkbox */}
     <div className="flex items-center space-x-2">
