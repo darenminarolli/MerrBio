@@ -2,6 +2,7 @@ export interface Product {
   _id: string
     id: string
     name: string
+    title: string
     description: string
     price: number
     image: string
@@ -10,6 +11,7 @@ export interface Product {
     farmerId: string
     unit: string
     stock: number
+    inStock: boolean
     isOrganic: boolean
     createdAt: string
   }

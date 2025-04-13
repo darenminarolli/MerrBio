@@ -1,4 +1,5 @@
-'use client'
+"use client"
+
 import { useState, useEffect } from "react";
 import { Loader2, Search, SlidersHorizontal } from "lucide-react";
 import { motion } from "framer-motion";
@@ -9,6 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import ProductCard from "@/components/product-card";
 import ProductFilters from "@/components/product-filters";
 import type { Product } from "@/lib/types";
+import ChatbotButton from "@/components/chatbot";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,19 +49,18 @@ export default function ProductsPage() {
   useEffect(() => {
     let result = [...products];
 
-    // Apply search query
+    // Apply search query based on title, description, and category
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
         (product) =>
-          product.name.toLowerCase().includes(query) ||
-          product.description.toLowerCase().includes(query) ||
-          product.farmerName.toLowerCase().includes(query) ||
+          product.title.toLowerCase().includes(query) ||
+          (product.description && product.description.toLowerCase().includes(query)) ||
           product.category.toLowerCase().includes(query)
       );
     }
 
-    // Filter by category
+    // Filter by category (exact match)
     if (filters.category) {
       result = result.filter((product) => product.category === filters.category);
     }
@@ -69,14 +70,14 @@ export default function ProductsPage() {
       (product) => product.price >= filters.priceRange.min && product.price <= filters.priceRange.max
     );
 
-    // Filter by organic
+    // Filter by organic status
     if (filters.organic) {
-      result = result.filter((product) => product.isOrganic);
+      result = result.filter((product) => product.isOrganic === true);
     }
 
-    // Filter by stock
+    // Filter by in-stock status
     if (filters.inStock) {
-      result = result.filter((product) => product.stock > 0);
+      result = result.filter((product) => product.inStock === true);
     }
 
     setFilteredProducts(result);
@@ -118,8 +119,7 @@ export default function ProductsPage() {
         <div className="mb-10 text-center">
           <h1 className="mb-3 text-4xl font-bold text-emerald-800">Fresh Products</h1>
           <p className="mx-auto max-w-2xl text-gray-600">
-            Discover farm-fresh produce directly from local farmers. Filter by category, price, and more to find exactly
-            what you need.
+            Discover farm-fresh produce directly from local farmers. Filter by category, price, and more to find exactly what you need.
           </p>
         </div>
 
@@ -159,7 +159,7 @@ export default function ProductsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-          {/* Filters - desktop */}
+          {/* Desktop Filters */}
           <div className="hidden md:block">
             <div className="sticky top-20 rounded-xl border border-emerald-100 bg-white p-6 shadow-sm">
               <ProductFilters filters={filters} onFilterChange={handleFilterChange} onClearFilters={clearFilters} />
@@ -219,6 +219,7 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
+      <ChatbotButton />
     </div>
   );
 }

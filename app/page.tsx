@@ -546,7 +546,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="relative">
-            <div className="absolute left-0 right-0 top-1/2 hidden h-0.5 -translate-y-1/2 bg-emerald-200 lg:block"></div>
+            {/* <div className="absolute left-0 right-0 top-1/2 hidden h-0.5 -translate-y-1/2 bg-emerald-200 lg:block"></div> */}
             <div className="grid gap-y-12 gap-x-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 {

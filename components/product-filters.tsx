@@ -86,12 +86,12 @@ export default function ProductFilters({ filters, onFilterChange, onClearFilters
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="vegetables">Vegetables</SelectItem>
-                  <SelectItem value="fruits">Fruits</SelectItem>
-                  <SelectItem value="dairy">Dairy</SelectItem>
-                  <SelectItem value="meat">Meat</SelectItem>
-                  <SelectItem value="grains">Grains</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="Vegetables">Vegetables</SelectItem>
+                  <SelectItem value="Fruits">Fruits</SelectItem>
+                  <SelectItem value="Dairy">Dairy</SelectItem>
+                  <SelectItem value="Meat">Meat</SelectItem>
+                  <SelectItem value="Grains">Grains</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -30,6 +30,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } catch (err) {
         console.error('Failed to parse user:', err);
       }
+    }else{
+        return
     }
   }, []);
 

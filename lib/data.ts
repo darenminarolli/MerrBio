@@ -4,7 +4,7 @@ import type { Product } from "./types"
 const mockProducts: Product[] = [
   {
     id: "1",
-    name: "Fresh Organic Tomatoes",
+    title: "Fresh Organic Tomatoes",
     description: "Locally grown organic tomatoes, perfect for salads and cooking.",
     price: 3.99,
     image: "/placeholder.svg?height=300&width=300",
@@ -18,7 +18,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "2",
-    name: "Grass-Fed Beef",
+    title: "Grass-Fed Beef",
     description: "Premium grass-fed beef from free-range cattle.",
     price: 12.99,
     image: "/placeholder.svg?height=300&width=300",
@@ -32,7 +32,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "3",
-    name: "Fresh Strawberries",
+    title: "Fresh Strawberries",
     description: "Sweet and juicy strawberries picked at peak ripeness.",
     price: 4.99,
     image: "/placeholder.svg?height=300&width=300",
@@ -46,7 +46,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "4",
-    name: "Organic Whole Milk",
+    title: "Organic Whole Milk",
     description: "Creamy whole milk from pasture-raised cows.",
     price: 5.49,
     image: "/placeholder.svg?height=300&width=300",
@@ -60,7 +60,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "5",
-    name: "Fresh Spinach",
+    title: "Fresh Spinach",
     description: "Nutrient-rich spinach leaves, perfect for salads and cooking.",
     price: 2.99,
     image: "/placeholder.svg?height=300&width=300",
@@ -74,7 +74,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "6",
-    name: "Organic Brown Eggs",
+    title: "Organic Brown Eggs",
     description: "Farm-fresh brown eggs from free-range chickens.",
     price: 6.99,
     image: "/placeholder.svg?height=300&width=300",
@@ -88,7 +88,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "7",
-    name: "Artisanal Goat Cheese",
+    title: "Artisanal Goat Cheese",
     description: "Creamy, tangy goat cheese made in small batches.",
     price: 8.99,
     image: "/placeholder.svg?height=300&width=300",
@@ -102,7 +102,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "8",
-    name: "Heirloom Carrots",
+    title: "Heirloom Carrots",
     description: "Colorful, sweet heirloom carrots, perfect for roasting.",
     price: 3.49,
     image: "/placeholder.svg?height=300&width=300",
@@ -116,7 +116,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "9",
-    name: "Organic Honey",
+    title: "Organic Honey",
     description: "Raw, unfiltered honey from local wildflowers.",
     price: 9.99,
     image: "/placeholder.svg?height=300&width=300",
@@ -130,7 +130,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "10",
-    name: "Fresh Baked Sourdough",
+    title: "Fresh Baked Sourdough",
     description: "Artisanal sourdough bread baked fresh daily.",
     price: 7.49,
     image: "/placeholder.svg?height=300&width=300",
@@ -144,7 +144,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "11",
-    name: "Organic Avocados",
+    title: "Organic Avocados",
     description: "Perfectly ripe avocados, ready to eat.",
     price: 2.49,
     image: "/placeholder.svg?height=300&width=300",
@@ -158,7 +158,7 @@ const mockProducts: Product[] = [
   },
   {
     id: "12",
-    name: "Pasture-Raised Chicken",
+    title: "Pasture-Raised Chicken",
     description: "Whole chicken raised on open pasture with natural diet.",
     price: 15.99,
     image: "/placeholder.svg?height=300&width=300",

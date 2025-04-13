@@ -28,6 +28,7 @@ import { getProductById, getProductsByCategory } from "@/lib/data"
 import type { Product } from "@/lib/types"
 import ProductCard from "@/components/product-card"
 import { useAuth } from "@/contexts/UserContext"
+import ChatbotButton from "@/components/chatbot"
 
 interface ProductPageProps {
     params: Promise<{ id: string }> 
@@ -527,6 +528,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           </div>
         )}
       </div>
+      <ChatbotButton/>
     </div>
   )
 }

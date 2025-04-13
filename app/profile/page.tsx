@@ -385,7 +385,7 @@ export default function FarmerDashboard() {
                   <Card className="overflow-hidden h-full border-slate-200 dark:border-slate-700 hover:shadow-md transition-all">
                     <div className="relative">
                       <img
-                        src={product.image}
+                        src='https://i0.wp.com/port2flavors.com/wp-content/uploads/2022/07/placeholder-614.png?fit=1200%2C800&ssl=1'
                         alt={product.title}
                         className="w-full h-40 object-cover"
                       />
@@ -443,7 +443,7 @@ export default function FarmerDashboard() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <Avatar>
-                              <AvatarImage src={request.clientImage || "/placeholder.svg"} alt={request.clientName} />
+                              <AvatarImage src="https://i0.wp.com/port2flavors.com/wp-content/uploads/2022/07/placeholder-614.png?fit=1200%2C800&ssl=1" alt={request.clientName} />
                               <AvatarFallback className="bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
                                 {request.clientName.split(" ").map((n) => n[0]).join("")}
                               </AvatarFallback>
