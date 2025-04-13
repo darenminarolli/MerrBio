@@ -23,7 +23,7 @@ export default function ClientsPage() {
           <Input type="search" placeholder="Search clients..." className="pl-8 w-full" />
         </div>
       </div>
-
+ 
       <ProductsTable />
     </div>
   )
