@@ -111,13 +111,13 @@ export default function ProductPage({ params }: ProductPageProps) {
   }
 
   const incrementQuantity = () => {
-    if (quantity < product.stock) {
+    if (product.inStock || product.stock) {
       setQuantity(quantity + 1)
     }
   }
 
   const decrementQuantity = () => {
-    if (quantity > 1) {
+    if (product.inStock || product.stock) {
       setQuantity(quantity - 1)
     }
   }
@@ -137,7 +137,8 @@ export default function ProductPage({ params }: ProductPageProps) {
         body: JSON.stringify({
           productId: product._id,
           clientId: user?.id, // make sure you have this from auth/user context
-          status: 'pending'   // optional
+          status: 'pending',   // optional
+          quantity: quantity,
         })
       })
   
@@ -145,6 +146,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   
       const data = await res.json()
       console.log('Cart item added:', data)
+      alert('Request to buy this product has been sent successfully!')
   
       setIsAddingToCart(false)
       setIsAdded(true)
@@ -280,7 +282,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                     size="icon"
                     className="h-10 w-10 rounded-l-lg border-r-0"
                     onClick={decrementQuantity}
-                    disabled={quantity <= 1}
+                    // disabled={product.inStock || product.stock}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -292,7 +294,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                     size="icon"
                     className="h-10 w-10 rounded-r-lg border-l-0"
                     onClick={incrementQuantity}
-                    disabled={quantity >= product.stock}
+                    // disabled={product.inStock || product.stock}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -485,7 +487,7 @@ export default function ProductPage({ params }: ProductPageProps) {
               <div className="flex flex-col gap-6 md:flex-row">
                 <div className="md:w-1/3">
                   <div className="aspect-video overflow-hidden rounded-lg">
-                    <Image
+                    <img
                       src="/placeholder.svg?height=300&width=500&text=Farm+Image"
                       alt={product.farmerName}
                       width={500}
