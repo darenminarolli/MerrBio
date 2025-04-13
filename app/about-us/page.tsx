@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function AboutUsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      {/* Hero Section */}
+      
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-slate-900/10 dark:bg-slate-800/20 z-0"></div>
         <div
@@ -45,7 +45,6 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Main Content */}
       <div className="container mx-auto py-12 px-4 md:px-6">
         <Tabs defaultValue="company" className="w-full max-w-6xl mx-auto">
           <TabsList className="grid w-full grid-cols-3 mb-12 bg-slate-100 dark:bg-slate-800 p-1 rounded-full">
@@ -69,7 +68,6 @@ export default function AboutUsPage() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Company Tab */}
           <TabsContent value="company" className="space-y-16">
             <section id="our-mission" className="scroll-mt-20 space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -86,14 +84,14 @@ export default function AboutUsPage() {
                     power of nature to create sustainable products that improve lives while protecting our planet.
                   </p>
                   <p className="text-slate-700 dark:text-slate-300 text-lg leading-relaxed">
-                    Founded in 2015, we've grown from a small research team to a leading biotechnology company with
+                    Founded in 2025, we've grown from a small research team to a leading biotechnology company with
                     partners across the globe. Our commitment to scientific excellence, ethical practices, and
                     environmental stewardship guides everything we do.
                   </p>
                 </div>
                 <div className="order-1 md:order-2 rounded-2xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
                   <img
-                    src="/placeholder.svg?height=600&width=800"
+                    src="/STARNOVA.png"
                     alt="STARNOVA laboratory"
                     className="w-full h-auto object-cover"
                   />
@@ -179,20 +177,19 @@ export default function AboutUsPage() {
                 </p>
               </div>
 
-              {/* Centered Team Cards - Only 2 Visionaries */}
               <div className="max-w-4xl mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {[
                     {
-                      name: "Dr. Sarah Chen",
-                      role: "Chief Scientific Officer",
-                      bio: "Ph.D. in Molecular Biology with 15+ years of research experience in sustainable biotechnology. Dr. Chen leads our research initiatives and has pioneered several breakthrough technologies.",
+                      name: "Daren Minarolli",
+                      role: "CEO",
+                      bio: "Daren has 3+ years of coding web application.Aiming to bring the user close to the friendly enviorment by implementig the lastest methodes.MERN Developer with a high background.Daren leads our research initiatives and has pioneered several breakthrough technologies.",
                       image: "/placeholder.svg?height=400&width=400",
                     },
                     {
-                      name: "Michael Rodriguez",
+                      name: "Henri Baruti",
                       role: "CEO",
-                      bio: "Former environmental consultant with a passion for bringing sustainable solutions to market. Under his leadership, STARNOVA has expanded into global markets and secured key partnerships.",
+                      bio: "Henri is a passionated frontend developer.Tech enthusiast.STARNOVA has expanded into global markets and secured key partnerships.",
                       image: "/placeholder.svg?height=400&width=400",
                     },
                   ].map((member, index) => (

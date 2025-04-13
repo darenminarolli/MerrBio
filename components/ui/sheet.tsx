@@ -3,35 +3,30 @@
 import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
-import { cn } from "@/lib/utils"; // Sigurohuni që ky utility të punojë siç duhet
+import { cn } from "@/lib/utils"; 
 
-// Sheet Component
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
-// Sheet Trigger Component
 function SheetTrigger({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
-// Sheet Close Component
 function SheetClose({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Close>) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
-// Sheet Portal Component
 function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
 }
 
-// Sheet Overlay Component
 function SheetOverlay({
   className,
   ...props
@@ -48,7 +43,6 @@ function SheetOverlay({
   );
 }
 
-// Sheet Content Component with customizable `side` prop
 function SheetContent({
   className,
   children,
@@ -86,7 +80,6 @@ function SheetContent({
   );
 }
 
-// Sheet Header Component
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -97,7 +90,6 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-// Sheet Footer Component
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -108,7 +100,6 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-// Sheet Title Component
 function SheetTitle({
   className,
   ...props
@@ -122,7 +113,6 @@ function SheetTitle({
   );
 }
 
-// Sheet Description Component
 function SheetDescription({
   className,
   ...props

@@ -1,6 +1,5 @@
 import type { Product } from "./types"
 
-// Mock data for products
 const mockProducts: Product[] = [
   {
     id: "1",
@@ -208,23 +207,23 @@ const mockProducts: Product[] = [
   },
 ]
 
-// Function to simulate fetching products from an API
+
 export async function getProducts(): Promise<Product[]> {
-  // Simulate API delay
+ 
   await new Promise((resolve) => setTimeout(resolve, 800))
   return mockProducts
 }
 
-// Function to get a single product by ID
+
 export async function getProductById(id: string): Promise<Product | undefined> {
-  // Simulate API delay
+
   await new Promise((resolve) => setTimeout(resolve, 500))
   return mockProducts.find((product) => product.id === id)
 }
 
-// Function to get products by category
+
 export async function getProductsByCategory(category: string): Promise<Product[]> {
-  // Simulate API delay
+
   await new Promise((resolve) => setTimeout(resolve, 800))
   return mockProducts.filter((product) => product.category === category)
 }

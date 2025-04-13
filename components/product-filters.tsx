@@ -47,7 +47,6 @@ export default function ProductFilters({ filters, onFilterChange, onClearFilters
     onFilterChange({ inStock: checked })
   }
 
-  // Count active filters
   const activeFilterCount = [
     filters.category !== "",
     filters.organic,

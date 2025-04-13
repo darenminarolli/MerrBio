@@ -23,7 +23,7 @@ type StructuredContent = {
 
 type Message = {
   id: number
-  content: any // using any as requested
+  content: any 
   sender: "user" | "bot"
   type: "structured" | "text"
 }
@@ -120,7 +120,6 @@ export default function ChatbotButton() {
       }
 
       const data: any = await response.json()
-      // If data has the structured keys, treat it as structured; otherwise, fallback to string
       const isStructured = data.title !== undefined && data.sections !== undefined && data.footer !== undefined
 
       const botMessage: Message = {
@@ -155,9 +154,7 @@ export default function ChatbotButton() {
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end space-y-4">
         {isChatOpen && (
           <div className="relative w-full max-w-[370px] h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-            {/* Chat header - Updated with red and green design */}
             <div className="bg-red-700 p-4 flex justify-between items-center relative overflow-hidden">
-              {/* Green decorative element */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-600 rounded-bl-full opacity-90"></div>
 
               <div className="flex items-center space-x-3 z-10">
@@ -176,7 +173,6 @@ export default function ChatbotButton() {
               </Button>
             </div>
 
-            {/* Chat messages */}
             <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}>
@@ -215,7 +211,6 @@ export default function ChatbotButton() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Chat input with green footer */}
             <div className="border-t border-gray-200 bg-emerald-50">
               <form onSubmit={handleSubmit} className="p-4">
                 <div className="flex space-x-2">
@@ -237,7 +232,6 @@ export default function ChatbotButton() {
               </form>
             </div>
 
-            {/* Scroll to bottom button - shows when scrolled up */}
             {hasScrolledUp() && (
               <Button
                 size="icon"
@@ -250,7 +244,6 @@ export default function ChatbotButton() {
           </div>
         )}
 
-        {/* Chat button - Split design */}
         <Button
           onClick={toggleChat}
           size="icon"

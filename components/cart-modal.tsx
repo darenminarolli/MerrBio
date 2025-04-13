@@ -23,7 +23,6 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
     clearCart: cart.clearCart,
   })
 
-  // Use effect to safely get cart context
   useEffect(() => {
     setCartState({
       items: cart.items,
@@ -37,7 +36,6 @@ export function CartModal({ isOpen, onClose }: CartModalProps) {
   const { items, updateQuantity, removeItem, totalPrice, clearCart } = cartState
 
   const handleSubmitOrder = async () => {
-    // Here you would typically send the order to your backend
     alert("Order submitted successfully!")
     clearCart()
     onClose()
