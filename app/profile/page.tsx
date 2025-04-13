@@ -29,7 +29,7 @@ import {
 import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/UserContext"
 
-// Helper: get user from local storage
+// Helper function to get user from local storage
 function getUserFromLocalStorage() {
   if (typeof window !== "undefined") {
     const stored = localStorage.getItem("user")
@@ -50,12 +50,25 @@ interface FarmerProduct {
   image: string
 }
 
+interface ClientRequest {
+  id: string
+  clientName: string
+  clientEmail: string
+  // if you later have clientImage, products, or total, add them here
+  clientImage?: string
+  status: string
+  date: string
+  products: any[]
+  total: number
+}
+
 export default function FarmerDashboard() {
   const [searchTerm, setSearchTerm] = useState("")
   const [farmerProducts, setFarmerProducts] = useState<FarmerProduct[]>([])
-  const [expandedRequest, setExpandedRequest] = useState<number | null>(null)
+  const [clientRequests, setClientRequests] = useState<ClientRequest[]>([])
+  const [expandedRequest, setExpandedRequest] = useState<string | null>(null)
   const [isAddProductOpen, setIsAddProductOpen] = useState(false)
-  // Track the product id we’re editing; null means we're adding a new product.
+  // Track if we're editing an existing product; null means creating new.
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [newProduct, setNewProduct] = useState({
     title: "",
@@ -68,22 +81,21 @@ export default function FarmerDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [user, setUser] = useState<any>(null)
 
-  // Load user from local storage
+  // Load user data from local storage once
   useEffect(() => {
     const storedUser = getUserFromLocalStorage()
     setUser(storedUser)
   }, [])
 
-  // Once user.id is available, fetch farmer products
+  // When user.id becomes available, fetch products and requests
   useEffect(() => {
     if (!user?.id) return
     getFarmerProducts()
+    getFarmerRequests()
   }, [user?.id])
 
-  // Fetch products based on the farmer id
+  // Fetch farmer products from endpoint /api/products/farmer/:id
   const getFarmerProducts = () => {
-    // We'll use a dedicated route that returns products only for the given farmer.
-    // Adjust the endpoint as needed.
     fetch(`http://localhost:5000/api/products/farmer/${user.id}`, {
       method: "GET",
       credentials: "include",
@@ -95,21 +107,19 @@ export default function FarmerDashboard() {
         return response.json()
       })
       .then((data) => {
-        // Filter only those products whose farmer._id matches user.id
-        // And map to our UI model
-        const mappedProducts: FarmerProduct[] = data
-          .filter((item: any) => item.farmer && item.farmer._id === user.id)
-          .map((item: any) => ({
-            id: item._id,
-            title: item.title,
-            name: item.title, // assuming title & name are the same
-            category: item.category,
-            inStock: item.inStock,
-            unit: item.unit || "",
-            price: item.price,
-            status: item.inStock ? "In Stock" : "Out of Stock",
-            image: item.image || "/placeholder.svg",
-          }))
+        // Map API response to local product interface.
+        // Assumes each product has _id, title, category, inStock, price, image, etc.
+        const mappedProducts: FarmerProduct[] = data.map((item: any) => ({
+          id: item._id,
+          title: item.title,
+          name: item.title, // assuming title is used as product name
+          category: item.category,
+          inStock: item.inStock,
+          unit: item.unit || "",
+          price: item.price,
+          status: item.inStock ? "In Stock" : "Out of Stock",
+          image: item.image || "/placeholder.svg",
+        }))
         setFarmerProducts(mappedProducts)
       })
       .catch((error) => {
@@ -117,7 +127,37 @@ export default function FarmerDashboard() {
       })
   }
 
-  // Input handlers
+  // Fetch client requests for the logged-in farmer.
+  // Assumes API endpoint /api/requests/farmer/:id returns an array of request objects.
+  const getFarmerRequests = () => {
+    fetch(`http://localhost:5000/api/requests/${user.id}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to fetch requests")
+        return response.json()
+      })
+      .then((data) => {
+        // Map the requests; note: adjust mapping if your API returns more detail.
+        const mappedRequests: ClientRequest[] = data.map((req: any) => ({
+          id: req._id,
+          clientName: req.clientId?.name || "Unknown",
+          clientEmail: req.clientId?.email || "",
+          clientImage: req.clientId?.image, // if available
+          status: req.status,
+          date: new Date(req.createdAt).toLocaleDateString(),
+          products: req.products || [], // if your request includes products array
+          total: req.total || 0,         // if your request includes a total field
+        }))
+        setClientRequests(mappedRequests)
+      })
+      .catch((error) => {
+        console.error("Error fetching requests:", error)
+      })
+  }
+
+  // Handlers for form inputs
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setNewProduct((prev) => ({ ...prev, [name]: value }))
@@ -132,7 +172,7 @@ export default function FarmerDashboard() {
     setNewProduct((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Submit handler: if editingProductId is set, update using PUT; otherwise, add using POST.
+  // Submit handler: if editingProductId exists, send PUT; otherwise, POST.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -158,10 +198,11 @@ export default function FarmerDashboard() {
       const result = await res.json()
       console.log(editingProductId ? "Product updated:" : "Product added:", result)
 
-      // Refresh the product list
+      // Refresh product list and client requests
       getFarmerProducts()
+      getFarmerRequests()
 
-      // Reset form and editing state
+      // Reset form
       setNewProduct({
         title: "",
         category: "",
@@ -174,13 +215,12 @@ export default function FarmerDashboard() {
       setIsAddProductOpen(false)
     } catch (err) {
       console.error("Error submitting product:", err)
-      // Optionally show an error message
     }
   }
 
-  // handleEdit: receives a product id, finds the product, populates the form, and opens the modal.
+  // Handle editing: given a product id, find the product, populate the form, and open the modal.
   const handleEdit = (productId: string) => {
-    const productToEdit = farmerProducts.find((product) => product.id === productId)
+    const productToEdit = farmerProducts.find((p) => p.id === productId)
     if (!productToEdit) {
       console.error("Product not found")
       return
@@ -189,15 +229,15 @@ export default function FarmerDashboard() {
       title: productToEdit.title,
       category: productToEdit.category,
       price: productToEdit.price.toString(),
-      description: "", // Update if you have description data
-      organic: false, // Update if needed
+      description: "", // update if you have description data in productToEdit
+      organic: false,  // update as needed if productToEdit contains this data
       inStock: productToEdit.inStock,
     })
     setEditingProductId(productId)
     setIsAddProductOpen(true)
   }
 
-  // handleDelete: receives a product id, sends a DELETE request, and updates state.
+  // Handle delete: given a product id, confirm and send DELETE request.
   const handleDelete = async (productId: string): Promise<void> => {
     const confirmDelete = window.confirm("Are you sure you want to delete this product?")
     if (!confirmDelete) return
@@ -212,19 +252,18 @@ export default function FarmerDashboard() {
         throw new Error("Failed to delete product")
       }
       console.log("Product deleted successfully")
-      setFarmerProducts((prevProducts) => prevProducts.filter((product) => product.id !== productId))
+      setFarmerProducts((prev) => prev.filter((p) => p.id !== productId))
     } catch (err) {
       console.error("Error deleting product:", err)
       alert("Failed to delete product. Please try again.")
     }
   }
 
-  // Toggle expansion of client requests (as before)
-  const toggleRequestExpansion = (id: number) => {
+  // Toggle expansion for client requests
+  const toggleRequestExpansion = (id: string) => {
     setExpandedRequest(expandedRequest === id ? null : id)
   }
 
-  // Logout
   const handleLogout = async () => {
     localStorage.removeItem("user")
     try {
@@ -235,7 +274,7 @@ export default function FarmerDashboard() {
       })
       const data = await res.json()
       if (!res.ok) {
-        // Handle error if needed
+        // Handle error if necessary
       } else {
         console.log("User logged out:", data)
         localStorage.setItem("user", JSON.stringify(data.user))
@@ -249,12 +288,11 @@ export default function FarmerDashboard() {
 
   // Filter products based on search term
   const filteredProducts = farmerProducts.filter(
-    (product) =>
-      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    (p) =>
+      p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // Render component
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
@@ -400,11 +438,7 @@ export default function FarmerDashboard() {
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card
-                      className={`overflow-hidden border-slate-200 dark:border-slate-700 hover:shadow-md transition-all ${
-                        expandedRequest === request.id ? "ring-2 ring-teal-500" : ""
-                      }`}
-                    >
+                    <Card className={`overflow-hidden border-slate-200 dark:border-slate-700 hover:shadow-md transition-all ${expandedRequest === request.id ? "ring-2 ring-teal-500" : ""}`}>
                       <div className="p-4 cursor-pointer" onClick={() => toggleRequestExpansion(request.id)}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -424,15 +458,13 @@ export default function FarmerDashboard() {
                           </div>
                           <div className="flex items-center gap-3">
                             <Badge className={`${
-                              request.status === "Pending"
+                              request.status === "pending"
                                 ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
                                 : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300"
                             }`}>
-                              {request.status}
+                              {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                             </Badge>
-                            <span className="font-bold text-teal-600 dark:text-teal-500">
-                              ${request.total.toFixed(2)}
-                            </span>
+                            {/* You can show additional details such as total if needed */}
                           </div>
                         </div>
                       </div>
@@ -444,36 +476,8 @@ export default function FarmerDashboard() {
                           transition={{ duration: 0.3 }}
                         >
                           <div className="px-4 pb-4 pt-2 border-t border-slate-200 dark:border-slate-700">
-                            <h5 className="font-medium text-slate-900 dark:text-white mb-3">Requested Products:</h5>
-                            <ul className="space-y-2 mb-4">
-                              {request.products.map((prod, idx) => (
-                                <li key={idx} className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                                  <CheckCircle className="h-4 w-4 text-teal-500" />
-                                  <span>
-                                    {prod.quantity} {prod.unit} of {prod.name}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                            <div className="flex flex-wrap gap-2">
-                              {request.status === "Pending" ? (
-                                <>
-                                  <Button className="bg-teal-500 hover:bg-teal-600 text-white">
-                                    <ThumbsUp className="mr-2 h-4 w-4" /> Accept
-                                  </Button>
-                                  <Button variant="outline" className="border-slate-300 dark:border-slate-700">
-                                    <X className="mr-2 h-4 w-4" /> Decline
-                                  </Button>
-                                </>
-                              ) : (
-                                <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
-                                  <CheckCircle className="mr-2 h-4 w-4" /> Prepare Order
-                                </Button>
-                              )}
-                              <Button variant="ghost" className="ml-auto">
-                                Details <ArrowRight className="ml-1 h-4 w-4" />
-                              </Button>
-                            </div>
+                            {/* If your request data has more details, render them here */}
+                            <p className="text-sm text-slate-600 dark:text-slate-400">Details about the request...</p>
                           </div>
                         </motion.div>
                       )}
@@ -593,43 +597,3 @@ export default function FarmerDashboard() {
     </div>
   )
 }
-
-// Dummy data for client requests (if needed)
-const clientRequests = [
-  {
-    id: 101,
-    clientName: "Green Grocers Co.",
-    clientImage: "/placeholder.svg?height=40&width=40",
-    products: [
-      { name: "Organic Tomatoes", quantity: 50, unit: "kg" },
-      { name: "Fresh Strawberries", quantity: 30, unit: "kg" },
-    ],
-    status: "Pending",
-    date: "April 15, 2025",
-    total: 349.5,
-  },
-  {
-    id: 102,
-    clientName: "Farm to Table Restaurant",
-    clientImage: "/placeholder.svg?height=40&width=40",
-    products: [
-      { name: "Organic Lettuce", quantity: 25, unit: "kg" },
-      { name: "Free-Range Eggs", quantity: 20, unit: "dozen" },
-    ],
-    status: "Confirmed",
-    date: "April 18, 2025",
-    total: 162.05,
-  },
-  {
-    id: 103,
-    clientName: "Wellness Market",
-    clientImage: "/placeholder.svg?height=40&width=40",
-    products: [
-      { name: "Fresh Strawberries", quantity: 15, unit: "kg" },
-      { name: "Organic Tomatoes", quantity: 40, unit: "kg" },
-    ],
-    status: "Pending",
-    date: "April 20, 2025",
-    total: 294.75,
-  },
-]

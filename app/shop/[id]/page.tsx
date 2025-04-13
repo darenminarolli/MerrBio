@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { getProductById, getProductsByCategory } from "@/lib/data"
 import type { Product } from "@/lib/types"
 import ProductCard from "@/components/product-card"
+import { useAuth } from "@/contexts/UserContext"
 
 interface ProductPageProps {
     params: Promise<{ id: string }> 
@@ -44,6 +45,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isAdded, setIsAdded] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
+  const {user} = useAuth()
 
   // Fetch product data
   useEffect(() => {
@@ -119,17 +121,40 @@ export default function ProductPage({ params }: ProductPageProps) {
     }
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product.stock <= 0) return
-
+  
     setIsAddingToCart(true)
-    // Simulate adding to cart
-    setTimeout(() => {
+  
+    try {
+      const res = await fetch('http://localhost:5000/api/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // send cookies if using auth
+        body: JSON.stringify({
+          productId: product._id,
+          clientId: user?.id, // make sure you have this from auth/user context
+          status: 'pending'   // optional
+        })
+      })
+  
+      if (!res.ok) throw new Error('Failed to add to cart')
+  
+      const data = await res.json()
+      console.log('Cart item added:', data)
+  
       setIsAddingToCart(false)
       setIsAdded(true)
       setTimeout(() => setIsAdded(false), 2000)
-    }, 800)
+  
+    } catch (error) {
+      setIsAddingToCart(false)
+      console.error('Error adding to cart:', error)
+    }
   }
+  
 
   // Generate multiple placeholder images for the gallery
   const productImages = [
@@ -284,37 +309,12 @@ export default function ProductPage({ params }: ProductPageProps) {
                   disabled={product.stock <= 0 || isAddingToCart}
                   onClick={handleAddToCart}
                 >
-                  {isAddingToCart ? (
-                    <span className="flex items-center">
-                      <svg className="mr-2 h-5 w-5 animate-spin" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Adding to Cart...
-                    </span>
-                  ) : isAdded ? (
-                    <span className="flex items-center">
-                      <Check className="mr-2 h-5 w-5" />
-                      Added to Cart
-                    </span>
-                  ) : (
-                    <span className="flex items-center">
+ 
+                    <span  className="flex items-center">
                       <ShoppingCart className="mr-2 h-5 w-5" />
-                      Add to Cart
+                      Request to buy 
                     </span>
-                  )}
+                  
                 </Button>
 
                 <TooltipProvider>
@@ -360,19 +360,19 @@ export default function ProductPage({ params }: ProductPageProps) {
             <div className="mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">Availability:</span>
-                {product.stock > 10 ? (
+                {/* {product.stock > 10 ? ( */}
                   <Badge variant="outline" className="border-emerald-200 text-emerald-700">
                     <Check className="mr-1 h-3 w-3" /> In Stock
                   </Badge>
-                ) : product.stock > 0 ? (
-                  <Badge variant="outline" className="border-amber-200 text-amber-700">
-                    Only {product.stock} left
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="border-red-200 text-red-700">
-                    Out of Stock
-                  </Badge>
-                )}
+                {/* // ) : product.stock > 0 ? (
+                //   <Badge variant="outline" className="border-amber-200 text-amber-700">
+                //     Only {product.stock} left
+                //   </Badge>
+                // ) : (
+                //   <Badge variant="outline" className="border-red-200 text-red-700">
+                //     Out of Stock
+                //   </Badge>
+                // )} */}
               </div>
             </div>
 
