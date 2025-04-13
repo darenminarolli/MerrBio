@@ -15,6 +15,9 @@ const mockProducts: Product[] = [
     stock: 50,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "2",
@@ -29,6 +32,9 @@ const mockProducts: Product[] = [
     stock: 20,
     isOrganic: false,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "3",
@@ -43,6 +49,9 @@ const mockProducts: Product[] = [
     stock: 30,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "4",
@@ -57,6 +66,9 @@ const mockProducts: Product[] = [
     stock: 15,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "5",
@@ -71,6 +83,9 @@ const mockProducts: Product[] = [
     stock: 40,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "6",
@@ -85,6 +100,9 @@ const mockProducts: Product[] = [
     stock: 25,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "7",
@@ -99,6 +117,9 @@ const mockProducts: Product[] = [
     stock: 10,
     isOrganic: false,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "8",
@@ -113,6 +134,9 @@ const mockProducts: Product[] = [
     stock: 35,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "9",
@@ -127,6 +151,9 @@ const mockProducts: Product[] = [
     stock: 0,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "10",
@@ -141,6 +168,9 @@ const mockProducts: Product[] = [
     stock: 12,
     isOrganic: false,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "11",
@@ -155,6 +185,9 @@ const mockProducts: Product[] = [
     stock: 45,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "12",
@@ -169,6 +202,9 @@ const mockProducts: Product[] = [
     stock: 8,
     isOrganic: false,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
 ]
 

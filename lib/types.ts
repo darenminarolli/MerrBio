@@ -10,7 +10,7 @@ export interface Product {
     farmerName: string
     farmerId: string
     unit: string
-    stock: number
+    stock: any
     inStock: boolean
     isOrganic: boolean
     createdAt: string
