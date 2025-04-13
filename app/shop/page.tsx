@@ -196,7 +196,7 @@ export default function ProductsPage() {
                   animate="show"
                 >
                   {filteredProducts.map((product) => (
-                    <motion.div key={product.id} variants={item}>
+                    <motion.div key={product._id} variants={item}>
                       <ProductCard product={product} />
                     </motion.div>
                   ))}

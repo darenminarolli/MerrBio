@@ -4,7 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/contexts/UserContext";
-import { CartProvider } from "@/components/cart/cart-provider"
+import { CartProvider } from "@/contexts/CartContext"
 import { ThemeProvider } from "@/components/theme-provider"
 
 const geistSans = Geist({
@@ -34,15 +34,15 @@ export default function RootLayout({
       >
         <div className="flex min-h-screen flex-col">
           
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <CartProvider>
+          {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
+            {/* <CartProvider> */}
               <AuthProvider>
               <Header/>          
         {children}
         <Footer/>
           </AuthProvider>
-            </CartProvider>
-          </ThemeProvider>
+            {/* </CartProvider> */}
+          {/* </ThemeProvider> */}
         </div>
       </body>
     </html>

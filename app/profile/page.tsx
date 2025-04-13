@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,16 +25,38 @@ import {
   ThumbsUp,
   Tractor,
   X,
-  ImageIcon,
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/UserContext"
 
+// Helper: get user from local storage
+function getUserFromLocalStorage() {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("user")
+    return stored ? JSON.parse(stored) : null
+  }
+  return null
+}
+
+interface FarmerProduct {
+  id: string
+  title: string
+  name: string
+  category: string
+  inStock: boolean
+  unit: string
+  price: number
+  status: string
+  image: string
+}
+
 export default function FarmerDashboard() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [farmerProducts, setFarmerProducts] = useState<FarmerProduct[]>([])
   const [expandedRequest, setExpandedRequest] = useState<number | null>(null)
   const [isAddProductOpen, setIsAddProductOpen] = useState(false)
-  const {user} = useAuth()
+  // Track the product id we’re editing; null means we're adding a new product.
+  const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [newProduct, setNewProduct] = useState({
     title: "",
     category: "",
@@ -44,53 +65,103 @@ export default function FarmerDashboard() {
     organic: false,
     inStock: true,
   })
-    const fileInputRef = useRef<HTMLInputElement>(null)
-  
-  // Handle input and text area changes
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [user, setUser] = useState<any>(null)
+
+  // Load user from local storage
+  useEffect(() => {
+    const storedUser = getUserFromLocalStorage()
+    setUser(storedUser)
+  }, [])
+
+  // Once user.id is available, fetch farmer products
+  useEffect(() => {
+    if (!user?.id) return
+    getFarmerProducts()
+  }, [user?.id])
+
+  // Fetch products based on the farmer id
+  const getFarmerProducts = () => {
+    // We'll use a dedicated route that returns products only for the given farmer.
+    // Adjust the endpoint as needed.
+    fetch(`http://localhost:5000/api/products/farmer/${user.id}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch products")
+        }
+        return response.json()
+      })
+      .then((data) => {
+        // Filter only those products whose farmer._id matches user.id
+        // And map to our UI model
+        const mappedProducts: FarmerProduct[] = data
+          .filter((item: any) => item.farmer && item.farmer._id === user.id)
+          .map((item: any) => ({
+            id: item._id,
+            title: item.title,
+            name: item.title, // assuming title & name are the same
+            category: item.category,
+            inStock: item.inStock,
+            unit: item.unit || "",
+            price: item.price,
+            status: item.inStock ? "In Stock" : "Out of Stock",
+            image: item.image || "/placeholder.svg",
+          }))
+        setFarmerProducts(mappedProducts)
+      })
+      .catch((error) => {
+        console.error("Error fetching products:", error)
+      })
+  }
+
+  // Input handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setNewProduct((prev) => ({ ...prev, [name]: value }))
   }
-  
-  // Handle checkbox changes
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target
     setNewProduct((prev) => ({ ...prev, [name]: checked }))
   }
-  
-  // Handle select changes
+
   const handleSelectChange = (name: string, value: string) => {
     setNewProduct((prev) => ({ ...prev, [name]: value }))
   }
-  
-  
-  // Trigger file input
-  const handleImageClick = () => {
-    fileInputRef.current?.click()
-  }
-  
-  // 🟢 Submit to /api/new-product
+
+  // Submit handler: if editingProductId is set, update using PUT; otherwise, add using POST.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-  
+
     try {
-  
-      const res = await fetch("http://localhost:5000/api/products", {
-        method: "POST",
+      let url = "http://localhost:5000/api/products"
+      let method = "POST"
+      if (editingProductId !== null) {
+        url = `http://localhost:5000/api/products/${editingProductId}`
+        method = "PUT"
+      }
+      const res = await fetch(url, {
+        method,
         body: JSON.stringify({
           ...newProduct,
           farmer: user?.id,
         }),
-        headers: {'Content-Type': 'application/json' },
-        credentials: "include", // 👈 crucial for cookies
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       })
-  
-      if (!res.ok) throw new Error("Failed to add product")
-  
+
+      if (!res.ok) throw new Error("Failed to save product")
+
       const result = await res.json()
-      console.log("Product added:", result)
-  
-      // Reset form
+      console.log(editingProductId ? "Product updated:" : "Product added:", result)
+
+      // Refresh the product list
+      getFarmerProducts()
+
+      // Reset form and editing state
       setNewProduct({
         title: "",
         category: "",
@@ -99,159 +170,117 @@ export default function FarmerDashboard() {
         organic: false,
         inStock: true,
       })
+      setEditingProductId(null)
       setIsAddProductOpen(false)
     } catch (err) {
       console.error("Error submitting product:", err)
-      // optionally show toast or error UI
+      // Optionally show an error message
     }
   }
-  
-  // Mock data for farmer products
-  const farmerProducts = [
-    {
-      id: 1,
-      name: "Organic Tomatoes",
-      category: "Vegetables",
-      stock: 250,
-      unit: "kg",
-      price: 3.99,
-      status: "In Stock",
-      image: "/placeholder.svg?height=100&width=100",
-    },
-    {
-      id: 2,
-      name: "Fresh Strawberries",
-      category: "Fruits",
-      stock: 20,
-      unit: "kg",
-      price: 6.99,
-      status: "Low Stock",
-      image: "/placeholder.svg?height=100&width=100",
-    },
-    {
-      id: 3,
-      name: "Organic Lettuce",
-      category: "Vegetables",
-      stock: 180,
-      unit: "kg",
-      price: 2.49,
-      status: "In Stock",
-      image: "/placeholder.svg?height=100&width=100",
-    },
-    {
-      id: 4,
-      name: "Free-Range Eggs",
-      category: "Dairy & Eggs",
-      stock: 300,
-      unit: "dozen",
-      price: 4.99,
-      status: "In Stock",
-      image: "/placeholder.svg?height=100&width=100",
-    },
-  ]
 
-  // Mock data for client requests
-  const clientRequests = [
-    {
-      id: 101,
-      clientName: "Green Grocers Co.",
-      clientImage: "/placeholder.svg?height=40&width=40",
-      products: [
-        { name: "Organic Tomatoes", quantity: 50, unit: "kg" },
-        { name: "Fresh Strawberries", quantity: 30, unit: "kg" },
-      ],
-      status: "Pending",
-      date: "April 15, 2025",
-      total: 349.5,
-    },
-    {
-      id: 102,
-      clientName: "Farm to Table Restaurant",
-      clientImage: "/placeholder.svg?height=40&width=40",
-      products: [
-        { name: "Organic Lettuce", quantity: 25, unit: "kg" },
-        { name: "Free-Range Eggs", quantity: 20, unit: "dozen" },
-      ],
-      status: "Confirmed",
-      date: "April 18, 2025",
-      total: 162.05,
-    },
-    {
-      id: 103,
-      clientName: "Wellness Market",
-      clientImage: "/placeholder.svg?height=40&width=40",
-      products: [
-        { name: "Fresh Strawberries", quantity: 15, unit: "kg" },
-        { name: "Organic Tomatoes", quantity: 40, unit: "kg" },
-      ],
-      status: "Pending",
-      date: "April 20, 2025",
-      total: 294.75,
-    },
-  ]
+  // handleEdit: receives a product id, finds the product, populates the form, and opens the modal.
+  const handleEdit = (productId: string) => {
+    const productToEdit = farmerProducts.find((product) => product.id === productId)
+    if (!productToEdit) {
+      console.error("Product not found")
+      return
+    }
+    setNewProduct({
+      title: productToEdit.title,
+      category: productToEdit.category,
+      price: productToEdit.price.toString(),
+      description: "", // Update if you have description data
+      organic: false, // Update if needed
+      inStock: productToEdit.inStock,
+    })
+    setEditingProductId(productId)
+    setIsAddProductOpen(true)
+  }
 
-  // Filter products based on search term
-  const filteredProducts = farmerProducts.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  // handleDelete: receives a product id, sends a DELETE request, and updates state.
+  const handleDelete = async (productId: string): Promise<void> => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this product?")
+    if (!confirmDelete) return
 
-  // Toggle request expansion
+    try {
+      const res = await fetch(`http://localhost:5000/api/products/${productId}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to delete product")
+      }
+      console.log("Product deleted successfully")
+      setFarmerProducts((prevProducts) => prevProducts.filter((product) => product.id !== productId))
+    } catch (err) {
+      console.error("Error deleting product:", err)
+      alert("Failed to delete product. Please try again.")
+    }
+  }
+
+  // Toggle expansion of client requests (as before)
   const toggleRequestExpansion = (id: number) => {
-    if (expandedRequest === id) {
-      setExpandedRequest(null)
-    } else {
-      setExpandedRequest(id)
-    }
+    setExpandedRequest(expandedRequest === id ? null : id)
   }
- const handleLogout = async() => {
-    // Clear user data from local storage
+
+  // Logout
+  const handleLogout = async () => {
     localStorage.removeItem("user")
     try {
       const res = await fetch("http://localhost:5000/api/auth/logout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // 👈 crucial for cookies
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       })
-
       const data = await res.json()
-
       if (!res.ok) {
-        // setError(data.message || "Something went wrong")
+        // Handle error if needed
       } else {
-        console.log("User logged in:", data)
+        console.log("User logged out:", data)
         localStorage.setItem("user", JSON.stringify(data.user))
-        window.location.href = "/" // 👈 redirect to home page
+        window.location.href = "/"
       }
     } catch (err) {
-    alert('error')
+      alert("Error during logout")
     }
-    // Redirect to login page
     window.location.href = "/auth/signin"
- }
+  }
+
+  // Filter products based on search term
+  const filteredProducts = farmerProducts.filter(
+    (product) =>
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  // Render component
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Simple Header */}
+      {/* Header */}
       <header className="bg-white dark:bg-slate-800 shadow-sm py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Tractor className="h-7 w-7 text-teal-500" />
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">Farmer Dashboard</h1>
           </div>
- <button onClick={handleLogout}>logout</button>
           <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-              <ShoppingCart className="h-5 w-5 text-slate-600 dark:text-slate-300" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-teal-500 rounded-full"></span>
-            </button>
-
+            {user?.role === "farmer" ? (
+              <button className="bg-red-300 p-2 rounded-2xl text-teal-600 hover:bg-teal-50" onClick={handleLogout}>
+                Logout
+              </button>
+            ) : (
+              <button className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                <ShoppingCart className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+                <span className="absolute top-0 right-0 w-2 h-2 bg-teal-500 rounded-full"></span>
+                <span className="bg-red-300 p-2 rounded-2xl text-teal-600 hover:bg-teal-50" onClick={handleLogout}>
+                  Logout
+                </span>
+              </button>
+            )}
             <Avatar className="h-9 w-9 border-2 border-teal-500">
-              <AvatarImage src="/placeholder.svg?height=36&width=36" alt="Farmer profile" />
               <AvatarFallback className="bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200">
-                JD
+                {user?.name.split(" ").map((n: string) => n[0]).join("")}
               </AvatarFallback>
             </Avatar>
           </div>
@@ -269,10 +298,10 @@ export default function FarmerDashboard() {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Welcome back, John!</h2>
+              <h2 className="text-2xl font-bold mb-2">Welcome back, {user?.name}!</h2>
               <p className="text-teal-50">Manage your farm products and client requests all in one place.</p>
             </div>
-            <Button className="bg-white text-teal-600 hover:bg-teal-50" onClick={() => setIsAddProductOpen(true)}>
+            <Button className="bg-white text-teal-600 hover:bg-teal-50" onClick={() => { setEditingProductId(null); setIsAddProductOpen(true); }}>
               <Plus className="mr-2 h-4 w-4" /> Add New Product
             </Button>
           </div>
@@ -295,7 +324,6 @@ export default function FarmerDashboard() {
           <TabsContent value="products" className="space-y-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">Available Products</h3>
-
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
@@ -307,8 +335,6 @@ export default function FarmerDashboard() {
                 />
               </div>
             </div>
-
-            {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {filteredProducts.map((product) => (
                 <motion.div
@@ -321,44 +347,34 @@ export default function FarmerDashboard() {
                   <Card className="overflow-hidden h-full border-slate-200 dark:border-slate-700 hover:shadow-md transition-all">
                     <div className="relative">
                       <img
-                        src={product.image || "/placeholder.svg"}
-                        alt={product.name}
+                        src={product.image}
+                        alt={product.title}
                         className="w-full h-40 object-cover"
                       />
-                      <Badge
-                        className={`absolute top-2 right-2 ${
-                          product.status === "In Stock" ? "bg-emerald-500" : "bg-amber-500"
-                        }`}
-                      >
-                        {product.status}
+                      <Badge className={`absolute top-2 right-2 ${product.inStock ? "bg-emerald-500" : "bg-amber-500"}`}>
+                        {product.inStock ? "In Stock" : "Out of Stock"}
                       </Badge>
                     </div>
-
                     <CardHeader className="pb-2 pt-4">
-                      <CardTitle className="text-lg">{product.name}</CardTitle>
+                      <CardTitle className="text-lg">{product.title}</CardTitle>
                     </CardHeader>
-
                     <CardContent className="pb-2">
                       <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 mb-3">
                         <Leaf className="h-4 w-4 text-teal-500" />
                         <span>{product.category}</span>
                       </div>
-
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-slate-600 dark:text-slate-400">Stock:</span>
-                        <span className="font-medium">
-                          {product.stock} {product.unit}
-                        </span>
-                      </div>
-
                       <div className="flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400">Price:</span>
                         <span className="font-bold text-teal-600 dark:text-teal-500">${product.price.toFixed(2)}</span>
                       </div>
                     </CardContent>
-
-                    <CardFooter className="pt-2">
-                      <Button className="w-full bg-teal-500 hover:bg-teal-600 text-white">Manage Stock</Button>
+                    <CardFooter className="pt-2 p-2 flex justify-between space-y-2">
+                      <Button onClick={() => handleEdit(product.id)} className="w-fit bg-teal-300 hover:bg-teal-400 text-white">
+                        Edit
+                      </Button>
+                      <Button onClick={() => handleDelete(product.id)} className="w-fit bg-red-300 hover:bg-red-400 text-white">
+                        Delete
+                      </Button>
                     </CardFooter>
                   </Card>
                 </motion.div>
@@ -369,7 +385,6 @@ export default function FarmerDashboard() {
           {/* Requests Tab */}
           <TabsContent value="requests" className="space-y-4">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Client Requests</h3>
-
             {clientRequests.length === 0 ? (
               <div className="text-center py-12">
                 <RefreshCw className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
@@ -396,10 +411,7 @@ export default function FarmerDashboard() {
                             <Avatar>
                               <AvatarImage src={request.clientImage || "/placeholder.svg"} alt={request.clientName} />
                               <AvatarFallback className="bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
-                                {request.clientName
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
+                                {request.clientName.split(" ").map((n) => n[0]).join("")}
                               </AvatarFallback>
                             </Avatar>
                             <div>
@@ -410,15 +422,12 @@ export default function FarmerDashboard() {
                               </div>
                             </div>
                           </div>
-
                           <div className="flex items-center gap-3">
-                            <Badge
-                              className={`${
-                                request.status === "Pending"
-                                  ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
-                                  : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300"
-                              }`}
-                            >
+                            <Badge className={`${
+                              request.status === "Pending"
+                                ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
+                                : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300"
+                            }`}>
                               {request.status}
                             </Badge>
                             <span className="font-bold text-teal-600 dark:text-teal-500">
@@ -427,7 +436,6 @@ export default function FarmerDashboard() {
                           </div>
                         </div>
                       </div>
-
                       {expandedRequest === request.id && (
                         <motion.div
                           initial={{ opacity: 0, height: 0 }}
@@ -438,16 +446,15 @@ export default function FarmerDashboard() {
                           <div className="px-4 pb-4 pt-2 border-t border-slate-200 dark:border-slate-700">
                             <h5 className="font-medium text-slate-900 dark:text-white mb-3">Requested Products:</h5>
                             <ul className="space-y-2 mb-4">
-                              {request.products.map((product, idx) => (
+                              {request.products.map((prod, idx) => (
                                 <li key={idx} className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                                   <CheckCircle className="h-4 w-4 text-teal-500" />
                                   <span>
-                                    {product.quantity} {product.unit} of {product.name}
+                                    {prod.quantity} {prod.unit} of {prod.name}
                                   </span>
                                 </li>
                               ))}
                             </ul>
-
                             <div className="flex flex-wrap gap-2">
                               {request.status === "Pending" ? (
                                 <>
@@ -479,117 +486,150 @@ export default function FarmerDashboard() {
         </Tabs>
       </main>
 
-      {/* Add Product Modal */}
+      {/* Add/Edit Product Modal */}
       <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Add New Product</DialogTitle>
+            <DialogTitle className="text-xl font-bold">
+              {editingProductId !== null ? "Edit Product" : "Add New Product"}
+            </DialogTitle>
           </DialogHeader>
-
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
-  <div className="grid grid-cols-1 gap-6">
-    {/* Product Title */}
-    <div className="space-y-2">
-      <Label htmlFor="title">Product Title</Label>
-      <Input
-        id="title"
-        name="title"
-        value={newProduct.title}
-        onChange={handleInputChange}
-        placeholder="e.g., Organic Tomatoes"
-        required
-      />
-    </div>
-
-    {/* Category */}
-    <div className="space-y-2">
-      <Label htmlFor="category">Category</Label>
-      <Select value={newProduct.category} onValueChange={(value) => handleSelectChange("category", value)}>
-        <SelectTrigger id="category">
-          <SelectValue placeholder="Select a category" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="Vegetables">Vegetables</SelectItem>
-          <SelectItem value="Fruits">Fruits</SelectItem>
-          <SelectItem value="Dairy & Eggs">Dairy & Eggs</SelectItem>
-          <SelectItem value="Meat">Meat</SelectItem>
-          <SelectItem value="Grains">Grains</SelectItem>
-          <SelectItem value="Other">Other</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-
-    {/* Price */}
-    <div className="space-y-2">
-      <Label htmlFor="price">Price</Label>
-      <div className="relative">
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-        <Input
-          id="price"
-          name="price"
-          type="number"
-          min="0"
-          step="0.01"
-          value={newProduct.price}
-          onChange={handleInputChange}
-          className="pl-8"
-          placeholder="0.00"
-          required
-        />
-      </div>
-    </div>
-
-
-    {/* Organic Checkbox */}
-    <div className="flex items-center space-x-2">
-      <input
-        type="checkbox"
-        id="organic"
-        name="organic"
-        checked={newProduct.organic}
-        onChange={handleCheckboxChange}
-      />
-      <Label htmlFor="organic">Organic</Label>
-    </div>
-
-    {/* In Stock Checkbox */}
-    <div className="flex items-center space-x-2">
-      <input
-        type="checkbox"
-        id="inStock"
-        name="inStock"
-        checked={newProduct.inStock}
-        onChange={handleCheckboxChange}
-      />
-      <Label htmlFor="inStock">In Stock</Label>
-    </div>
-
-    {/* Description */}
-    <div className="space-y-2">
-      <Label htmlFor="description">Description</Label>
-      <Textarea
-        id="description"
-        name="description"
-        value={newProduct.description}
-        onChange={handleInputChange}
-        placeholder="Describe your product..."
-        rows={3}
-      />
-    </div>
-  </div>
-
-  <DialogFooter className="pt-4">
-    <Button type="button" variant="outline" onClick={() => setIsAddProductOpen(false)}>
-      Cancel
-    </Button>
-    <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white">
-      <Plus className="mr-2 h-4 w-4" /> Add Product
-    </Button>
-  </DialogFooter>
-</form>
-
+            <div className="grid grid-cols-1 gap-6">
+              {/* Product Title */}
+              <div className="space-y-2">
+                <Label htmlFor="title">Product Title</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={newProduct.title}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Organic Tomatoes"
+                  required
+                />
+              </div>
+              {/* Category */}
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select value={newProduct.category} onValueChange={(value) => handleSelectChange("category", value)}>
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Vegetables">Vegetables</SelectItem>
+                    <SelectItem value="Fruits">Fruits</SelectItem>
+                    <SelectItem value="Dairy & Eggs">Dairy & Eggs</SelectItem>
+                    <SelectItem value="Meat">Meat</SelectItem>
+                    <SelectItem value="Grains">Grains</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Price */}
+              <div className="space-y-2">
+                <Label htmlFor="price">Price</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={newProduct.price}
+                    onChange={handleInputChange}
+                    className="pl-8"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+              </div>
+              {/* Organic Checkbox */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="organic"
+                  name="organic"
+                  checked={newProduct.organic}
+                  onChange={handleCheckboxChange}
+                />
+                <Label htmlFor="organic">Organic</Label>
+              </div>
+              {/* In Stock Checkbox */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="inStock"
+                  name="inStock"
+                  checked={newProduct.inStock}
+                  onChange={handleCheckboxChange}
+                />
+                <Label htmlFor="inStock">In Stock</Label>
+              </div>
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={newProduct.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe your product..."
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => { setIsAddProductOpen(false); setEditingProductId(null); }}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-teal-500 hover:bg-teal-600 text-white">
+                <Plus className="mr-2 h-4 w-4" /> {editingProductId !== null ? "Update Product" : "Add Product"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
   )
 }
+
+// Dummy data for client requests (if needed)
+const clientRequests = [
+  {
+    id: 101,
+    clientName: "Green Grocers Co.",
+    clientImage: "/placeholder.svg?height=40&width=40",
+    products: [
+      { name: "Organic Tomatoes", quantity: 50, unit: "kg" },
+      { name: "Fresh Strawberries", quantity: 30, unit: "kg" },
+    ],
+    status: "Pending",
+    date: "April 15, 2025",
+    total: 349.5,
+  },
+  {
+    id: 102,
+    clientName: "Farm to Table Restaurant",
+    clientImage: "/placeholder.svg?height=40&width=40",
+    products: [
+      { name: "Organic Lettuce", quantity: 25, unit: "kg" },
+      { name: "Free-Range Eggs", quantity: 20, unit: "dozen" },
+    ],
+    status: "Confirmed",
+    date: "April 18, 2025",
+    total: 162.05,
+  },
+  {
+    id: 103,
+    clientName: "Wellness Market",
+    clientImage: "/placeholder.svg?height=40&width=40",
+    products: [
+      { name: "Fresh Strawberries", quantity: 15, unit: "kg" },
+      { name: "Organic Tomatoes", quantity: 40, unit: "kg" },
+    ],
+    status: "Pending",
+    date: "April 20, 2025",
+    total: 294.75,
+  },
+]

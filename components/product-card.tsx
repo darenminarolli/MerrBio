@@ -22,7 +22,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [isFavorite, setIsFavorite] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isAdded, setIsAdded] = useState(false)
-
+console.log(product)
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     if (product.stock <= 0) return
@@ -49,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
-      <Link href={`/shop/${product.id}`} className="absolute inset-0 z-10">
+      <Link href={`/shop/${product._id}`} className="absolute inset-0 z-10">
         <span className="sr-only">View Product</span>
       </Link>
 
@@ -62,10 +62,10 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        <Image
+        <img
           src="https://domf5oio6qrcr.cloudfront.net/medialibrary/11499/3b360279-8b43-40f3-9b11-604749128187.jpg"
           alt={product.name}
-          fill
+          // fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
 
@@ -101,7 +101,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   className="h-9 w-9 rounded-full bg-white/90 backdrop-blur-sm transition-all hover:bg-white"
                   asChild
                 >
-                  <Link href={`/shop/${product.id}`}>
+                  <Link href={`/shop/${product._id}`}>
                     <Eye className="h-5 w-5 text-gray-600" />
                     <span className="sr-only">Quick view</span>
                   </Link>

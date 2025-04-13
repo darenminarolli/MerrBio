@@ -5,15 +5,15 @@ import { Button } from './ui/button'
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet'
 import { Menu, ShoppingCart } from 'lucide-react'
 import { useAuth } from '@/contexts/UserContext'
-import { CartModal } from "./cart-modal"
-import { useCart } from "@/contexts/CartContext"
+// import { CartModal } from "./cart-modal"
+// import { useCart } from "@/contexts/CartContext"
 
 
 const Header = () => {
       const [scrolled, setScrolled] = useState(false)
       const { user, isAuthenticated } = useAuth()
       const [cartOpen, setCartOpen] = useState(false)
-      const { getItemsCount } = useCart()
+    //   const { getItemsCount } = useCart()
       useEffect(() => {
         const handleScroll = () => {
           setScrolled(window.scrollY > 50)
@@ -73,11 +73,11 @@ const Header = () => {
       <Button variant="ghost" size="icon" className="relative" onClick={() => setCartOpen(true)}>
           <ShoppingCart className="h-5 w-5" />
           <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-xs text-white">
-            {getItemsCount()}
+            {/* {getItemsCount()} */}
           </span>
           <span className="sr-only">Shopping Cart</span>
         </Button>
-        <CartModal isOpen={ cartOpen} onClose={()=>setCartOpen(false)} />
+        {/* <CartModal isOpen={ cartOpen} onClose={()=>setCartOpen(false)} /> */}
         {
             user ? (
                 <div className="hidden md:flex md:gap-3">

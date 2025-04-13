@@ -47,30 +47,53 @@ export default function ProductPage({ params }: ProductPageProps) {
 
   // Fetch product data
   useEffect(() => {
-    async function fetchProductData() {
+    async function fetchData() {
+      async function getProductById(id: string): Promise<Product | null> {
+        try {
+          const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+            method: "GET",
+            credentials: "include", // remove this if you’re not using cookies
+          })
+    
+          if (!res.ok) {
+            console.error("Failed to fetch product:", res.status)
+            return null
+          }
+    
+          const data = await res.json()
+          return data as Product
+        } catch (error) {
+          console.error("Error fetching product by ID:", error)
+          return null
+        }
+      }
+    
       try {
         const productData = await getProductById(id)
+    
         if (!productData) {
           notFound()
           return
         }
-
+    
         setProduct(productData)
-
+    
         if (productData.category) {
           const categoryProducts = await getProductsByCategory(productData.category)
-          const filtered = categoryProducts.filter((p) => p.id !== productData.id).slice(0, 4)
+          const filtered = categoryProducts
+            .filter(p => p.id !== productData.id)
+            .slice(0, 4)
+    
           setRelatedProducts(filtered)
         }
-
-        setLoading(false)
       } catch (error) {
         console.error("Error fetching product:", error)
+      } finally {
         setLoading(false)
       }
     }
-
-    fetchProductData()
+    
+    fetchData()
   }, [id])
 
   if (loading || !product) {
@@ -149,10 +172,10 @@ export default function ProductPage({ params }: ProductPageProps) {
           {/* Product Images */}
           <div className="space-y-4">
             <div className="relative aspect-square overflow-hidden rounded-xl bg-white">
-              <Image
-                src={productImages[activeImage] || "/placeholder.svg"}
+              <img
+                src="https://i0.wp.com/port2flavors.com/wp-content/uploads/2022/07/placeholder-614.png?fit=1200%2C800&ssl=1"
                 alt={product.name}
-                fill
+                // fill
                 className="object-cover transition-all duration-300 hover:scale-105"
               />
               {product.isOrganic && (
@@ -169,8 +192,8 @@ export default function ProductPage({ params }: ProductPageProps) {
                   }`}
                   onClick={() => setActiveImage(index)}
                 >
-                  <Image
-                    src={image || "/placeholder.svg"}
+                  <img
+                    src="https://i0.wp.com/port2flavors.com/wp-content/uploads/2022/07/placeholder-614.png?fit=1200%2C800&ssl=1"
                     alt={`${product.name} - Image ${index + 1}`}
                     width={100}
                     height={100}
