@@ -183,7 +183,7 @@ export default function SignInForm() {
           <div className="mt-2 text-center text-sm">
             Don't have an account?{" "}
             <Link
-              href="/sign-up"
+              href="/auth/signup"
               className="font-medium text-emerald-600 hover:text-emerald-700"
             >
               Sign up

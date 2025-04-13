@@ -103,7 +103,7 @@ const Header = () => {
               </div>
             ) : (
               <div className="hidden md:flex md:gap-3">
-                <Link href="/profile">
+                <Link href={user.role==='admin'?'/admin': "/profile"}>
                   <Button variant="ghost" className="hover:text-emerald-600 transition-colors">
                     Profile
                   </Button>
@@ -179,7 +179,7 @@ const Header = () => {
                     </div>
                   ) : (
                     <div className="hidden md:flex md:gap-3">
-                      <Link href="/profile">
+                      <Link href={user.role==='admin'?'/admin':"/profile"}>
                         <Button variant="ghost" className="hover:text-emerald-600 transition-colors">
                           Profile
                         </Button>
