@@ -1,6 +1,5 @@
 import type { Product } from "./types"
 
-// Mock data for products
 const mockProducts: Product[] = [
   {
     id: "1",
@@ -15,6 +14,9 @@ const mockProducts: Product[] = [
     stock: 50,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "2",
@@ -29,6 +31,9 @@ const mockProducts: Product[] = [
     stock: 20,
     isOrganic: false,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "3",
@@ -43,6 +48,9 @@ const mockProducts: Product[] = [
     stock: 30,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "4",
@@ -57,6 +65,9 @@ const mockProducts: Product[] = [
     stock: 15,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "5",
@@ -71,6 +82,9 @@ const mockProducts: Product[] = [
     stock: 40,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "6",
@@ -85,6 +99,9 @@ const mockProducts: Product[] = [
     stock: 25,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "7",
@@ -99,6 +116,9 @@ const mockProducts: Product[] = [
     stock: 10,
     isOrganic: false,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "8",
@@ -113,6 +133,9 @@ const mockProducts: Product[] = [
     stock: 35,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "9",
@@ -127,6 +150,9 @@ const mockProducts: Product[] = [
     stock: 0,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "10",
@@ -141,6 +167,9 @@ const mockProducts: Product[] = [
     stock: 12,
     isOrganic: false,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "11",
@@ -155,6 +184,9 @@ const mockProducts: Product[] = [
     stock: 45,
     isOrganic: true,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
   {
     id: "12",
@@ -169,26 +201,29 @@ const mockProducts: Product[] = [
     stock: 8,
     isOrganic: false,
     createdAt: new Date().toISOString(),
+    _id: "",
+    name: "",
+    inStock: false
   },
 ]
 
-// Function to simulate fetching products from an API
+
 export async function getProducts(): Promise<Product[]> {
-  // Simulate API delay
+ 
   await new Promise((resolve) => setTimeout(resolve, 800))
   return mockProducts
 }
 
-// Function to get a single product by ID
+
 export async function getProductById(id: string): Promise<Product | undefined> {
-  // Simulate API delay
+
   await new Promise((resolve) => setTimeout(resolve, 500))
   return mockProducts.find((product) => product.id === id)
 }
 
-// Function to get products by category
+
 export async function getProductsByCategory(category: string): Promise<Product[]> {
-  // Simulate API delay
+
   await new Promise((resolve) => setTimeout(resolve, 800))
   return mockProducts.filter((product) => product.category === category)
 }
