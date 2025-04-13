@@ -119,7 +119,7 @@ console.log(product)
         <div className="mb-1 flex items-center gap-1">
           <span className="text-xs font-medium text-emerald-600">{product.category}</span>
           <span className="text-xs text-gray-400">•</span>
-          <span className="text-xs text-gray-500">{product.farmerName}</span>
+          <span className="text-xs text-gray-500">{product.title}</span>
         </div>
 
         <h3 className="mb-1 text-lg font-medium group-hover:text-emerald-600 transition-colors">{product.name}</h3>

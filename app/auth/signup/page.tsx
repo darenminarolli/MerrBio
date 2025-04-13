@@ -130,6 +130,7 @@ export default function SignUpForm() {
       if (response.ok) {
         // Handle successful sign-up (e.g., redirect or show success message)
         console.log("Account created successfully:", data)
+        window.location.href='/auth/signin'
       } else {
         // Handle error from backend
         console.error("Error creating account:", data.message)
@@ -175,14 +176,14 @@ export default function SignUpForm() {
             <div className="space-y-2">
               <Label>I am a:</Label>
               <Tabs
-                defaultValue="user"
+                defaultValue="client"
                 value={formData.role}
                 onValueChange={(value) => handleAccountTypeChange(value as AccountType)}
                 className="w-full"
               >
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger
-                    value="user"
+                    value="client"
                     className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white"
                   >
                     Customer

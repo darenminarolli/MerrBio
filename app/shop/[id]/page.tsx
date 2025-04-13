@@ -160,9 +160,9 @@ export default function ProductPage({ params }: ProductPageProps) {
   // Generate multiple placeholder images for the gallery
   const productImages = [
     product.image || "/placeholder.svg",
-    `/placeholder.svg?height=600&width=600&text=${product.name}+1`,
-    `/placeholder.svg?height=600&width=600&text=${product.name}+2`,
-    `/placeholder.svg?height=600&width=600&text=${product.name}+3`,
+    `/placeholder.svg?height=600&width=600&text=${product.title}+1`,
+    `/placeholder.svg?height=600&width=600&text=${product.title}+2`,
+    `/placeholder.svg?height=600&width=600&text=${product.title}+3`,
   ]
 
   return (
@@ -182,7 +182,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
           </Link>
           <span>/</span>
-          <span className="text-gray-900">{product.name}</span>
+          <span className="text-gray-900">{product.title}</span>
         </div>
 
         <Button
@@ -200,7 +200,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             <div className="relative aspect-square overflow-hidden rounded-xl bg-white">
               <img
                 src="https://i0.wp.com/port2flavors.com/wp-content/uploads/2022/07/placeholder-614.png?fit=1200%2C800&ssl=1"
-                alt={product.name}
+                alt={product.title}
                 // fill
                 className="object-cover transition-all duration-300 hover:scale-105"
               />
@@ -220,7 +220,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                 >
                   <img
                     src="https://i0.wp.com/port2flavors.com/wp-content/uploads/2022/07/placeholder-614.png?fit=1200%2C800&ssl=1"
-                    alt={`${product.name} - Image ${index + 1}`}
+                    alt={`${product.title} - Image ${index + 1}`}
                     width={100}
                     height={100}
                     className="h-full w-full object-cover"
@@ -247,7 +247,7 @@ export default function ProductPage({ params }: ProductPageProps) {
               )}
             </div>
 
-            <h1 className="mb-2 text-3xl font-bold text-gray-900 md:text-4xl">{product.name}</h1>
+            <h1 className="mb-2 text-3xl font-bold text-gray-900 md:text-4xl">{product.title}</h1>
 
             <div className="mb-4 flex items-center gap-2">
               <Link href={`/farmers/${product.farmerId}`} className="text-sm text-emerald-600 hover:underline">
@@ -448,15 +448,12 @@ export default function ProductPage({ params }: ProductPageProps) {
                 {product.description}
                 {/* Extended description */}
                 <br />
-                <br />
-                Our {product.name} is carefully grown and harvested at the peak of freshness to ensure maximum flavor
-                and nutritional value. Each {product.unit} is inspected for quality before being packaged and delivered
-                to your door.
+{product.description}
                 {product.isOrganic && (
                   <>
                     <br />
                     <br />
-                    As a certified organic product, our {product.name} is grown without synthetic pesticides or
+                    As a certified organic product, our {product.title} is grown without synthetic pesticides or
                     fertilizers, making it better for your health and the environment.
                   </>
                 )}
